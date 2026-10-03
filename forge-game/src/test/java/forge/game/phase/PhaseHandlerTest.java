@@ -22,6 +22,7 @@ public class PhaseHandlerTest {
     public void hookPublicationSupportsCrossThreadTeardown() throws ReflectiveOperationException {
         Assert.assertTrue(Modifier.isVolatile(PhaseHandler.class.getDeclaredField("mainGameLoopStartedHook").getModifiers()));
         Assert.assertTrue(Modifier.isVolatile(PhaseHandler.class.getDeclaredField("mainLoopStepCompletionHook").getModifiers()));
+        Assert.assertTrue(Modifier.isVolatile(PhaseHandler.class.getDeclaredField("drawStepCompletionHook").getModifiers()));
         Assert.assertTrue(Modifier.isVolatile(PhaseHandler.class.getDeclaredField("attackersDeclaredCompletionHook").getModifiers()));
         Assert.assertTrue(Modifier.isVolatile(PhaseHandler.class.getDeclaredField("blockersDeclaredCompletionHook").getModifiers()));
         Assert.assertTrue(Modifier.isVolatile(PhaseHandler.class.getDeclaredField("combatEndedCompletionHook").getModifiers()));

@@ -6278,14 +6278,18 @@ public class Card extends GameEntity implements Comparable<Card>, IHasSVars, ITr
                 damageType = DamageType.Deathtouch;
             }
 
-            // Play the Damage sound
-            game.fireEvent(new GameEventCardDamaged(
-                    CardView.get(this),
-                    CardView.get(source),
-                    damageIn,
-                    damageType,
-                    DamageSourceKind.from(isCombat, cause)));
         }
+
+        // Damage to planeswalkers and battles changes counters rather than a
+        // creature damage total, but it is still damage dealt to a card.  Keep
+        // the public game-event stream complete so non-Forge clients can show
+        // the target impact and damage animation for every legal card target.
+        game.fireEvent(new GameEventCardDamaged(
+                CardView.get(this),
+                CardView.get(source),
+                damageIn,
+                damageType,
+                DamageSourceKind.from(isCombat, cause)));
 
         return damageIn;
     }

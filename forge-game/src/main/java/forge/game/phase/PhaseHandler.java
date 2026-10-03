@@ -97,6 +97,7 @@ public class PhaseHandler implements java.io.Serializable, IHasForgeLog {
     private final transient Game game;
     private transient volatile Runnable mainGameLoopStartedHook;
     private transient volatile Runnable mainLoopStepCompletionHook;
+    private transient volatile Runnable drawStepCompletionHook;
     private transient volatile Runnable attackersDeclaredCompletionHook;
     private transient volatile Runnable blockersDeclaredCompletionHook;
     private transient volatile Runnable combatEndedCompletionHook;
@@ -117,6 +118,16 @@ public class PhaseHandler implements java.io.Serializable, IHasForgeLog {
      */
     public final void setMainLoopStepCompletionHook(final Runnable hook) {
         mainLoopStepCompletionHook = hook;
+    }
+
+    /**
+     * Installs a transient callback immediately after the compulsory draw-step
+     * draw has resolved. This is a distinct safe point: consumers that animate
+     * the Library→Hand transfer need to see it before the draw-step priority
+     * window (and its next phase transition) can replace that view state.
+     */
+    public final void setDrawStepCompletionHook(final Runnable hook) {
+        drawStepCompletionHook = hook;
     }
 
     /** Installs a transient callback invoked after attacker declaration is complete. */
@@ -303,6 +314,10 @@ public class PhaseHandler implements java.io.Serializable, IHasForgeLog {
                         p.resetNumDrawnThisDrawStep();
                     }
                     playerTurn.drawCard();
+                    final Runnable drawCompletionHook = drawStepCompletionHook;
+                    if (drawCompletionHook != null) {
+                        drawCompletionHook.run();
+                    }
                     break;
 
                 case MAIN1:

@@ -1,5 +1,6 @@
 package forge.game.spellability;
 
+import forge.card.CardType;
 import forge.card.mana.ManaAtom;
 import forge.game.CardTraitBase;
 import forge.game.Game;
@@ -307,6 +308,13 @@ public class SpellAbilityProperty {
             return true;
         } else if (property.startsWith("NamedAbility")) {
             return sa.getName().equals(property.substring(12));
+        } else if (sa.isSpell() && sa.getCardState() != null
+                && (CardType.isACardType(property) || CardType.isASubType(property)
+                    || (property.startsWith("non") && (CardType.isACardType(property.substring(3))
+                        || CardType.isASubType(property.substring(3)))))) {
+            // An Adventure or other alternate-face spell has its own type. The
+            // host card may still be showing the front face while paying for it.
+            return sa.getCardState().hasProperty(property, sourceController, source, spellAbility);
         } else if (sa.getHostCard() != null) {
             return sa.getHostCard().hasProperty(property, sourceController, source, spellAbility);
         }

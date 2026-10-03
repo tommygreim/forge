@@ -95,11 +95,22 @@ public class ComputerUtilMana {
     }
 
     public static CardCollection getManaSourcesToPayCost(final ManaCostBeingPaid cost, final SpellAbility sa, final Player ai, final boolean effect) {
-        final List<SpellAbility> payment = payManaCost(cost, sa, ai, true, true, effect);
+        final List<SpellAbility> payment = getManaPaymentPlan(cost, sa, ai, effect);
         if (payment == null) {
             return null;
         }
         return new CardCollection(payment.stream().map(s -> s.getHostCard()));
+    }
+
+    /**
+     * Return the exact mana abilities selected by the automatic payer's dry
+     * run, or {@code null} when the cost cannot be paid.  Callers that need to
+     * reason about activation costs must use this ability-level projection;
+     * collapsing the plan to source cards loses which of a card's multiple
+     * mana abilities Forge selected.
+     */
+    public static List<SpellAbility> getManaPaymentPlan(final ManaCostBeingPaid cost, final SpellAbility sa, final Player ai, final boolean effect) {
+        return payManaCost(cost, sa, ai, true, true, effect);
     }
 
     private static Integer scoreManaProducingCard(final Card card) {
