@@ -701,7 +701,12 @@ public class Player extends GameEntity implements Comparable<Player> {
         runParams.put(AbilityKey.DefendingPlayer, game.getCombat() != null ? game.getCombat().getDefendingPlayerRelatedTo(source) : null);
         game.getTriggerHandler().runTrigger(TriggerType.DamageDone, runParams, isCombat);
 
-        game.fireEvent(new GameEventPlayerDamaged(PlayerView.get(this), CardView.get(source), amount, isCombat, infect));
+        game.fireEvent(new GameEventPlayerDamaged(
+                PlayerView.get(this),
+                CardView.get(source),
+                amount,
+                DamageSourceKind.from(isCombat, cause),
+                infect));
 
         return amount;
     }
@@ -1059,6 +1064,7 @@ public class Player extends GameEntity implements Comparable<Player> {
                 for (Card c : toGrave) {
                     Card moved = getGame().getAction().moveToGraveyard(c, cause, params);
                     moved.setSurveilled(true);
+                    getGame().fireEvent(new GameEventCardSurveiled(moved, cause != null ? cause.getHostCard() : null));
                     numToGrave++;
                 }
                 if (cause.hasParam("RememberMoved")) {
@@ -1623,7 +1629,7 @@ public class Player extends GameEntity implements Comparable<Player> {
         game.getTriggerHandler().runTrigger(TriggerType.Shuffled, runParams, false);
 
         // Play the shuffle sound
-        game.fireEvent(new GameEventShuffle(this));
+        game.fireEvent(new GameEventShuffle(this, sa));
     }
 
     public final Card playLand(final Card land, SpellAbility cause) {
@@ -2267,7 +2273,7 @@ public class Player extends GameEntity implements Comparable<Player> {
 
     public final void addSacrificedThisTurn(final Card cpy, final SpellAbility source) {
         // Play the Sacrifice sound
-        game.fireEvent(new GameEventCardSacrificed(CardView.get(cpy)));
+        game.fireEvent(new GameEventCardSacrificed(cpy, source, game.costPaymentStack.peek()));
 
         sacrificedThisTurn.add(cpy);
 

@@ -468,6 +468,7 @@ public class YieldController {
     }
 
     public void onSpellAbilityCast(SpellAbilityStackInstance si) {
+        if (!shouldEvaluateInterrupts()) return;
         PlayerView local = owner.getLocalPlayerView();
         if (local == null) return;
         boolean isOpponent = !si.getActivatingPlayer().getView().equals(local);

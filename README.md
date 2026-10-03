@@ -1,5 +1,19 @@
 # ⚔️  Forge: The Magic: The Gathering Rules Engine
 
+## Leyline integration fork
+
+This repository is a direct fork of [Card-Forge/forge](https://github.com/Card-Forge/forge).
+The release integration is based on Forge 2.0.15 (`4ec5f1a2c`), with the downstream
+changes from [delebedev/forge](https://github.com/delebedev/forge) through
+`8cf8441b42e1473c1783a1b91dbc6b524922f589` and the additional integration fixes used
+by [tommygreim/leyline](https://github.com/tommygreim/leyline) retained.
+
+The additional changes expose mana-payment plans and draw-step completion,
+report damage to planeswalkers and battles, and check spell-face characteristics
+when paying with restricted mana. They support the downstream protocol bridge;
+this fork does not automatically track the latest upstream engine release.
+Integration-specific issues belong in the downstream repositories, not upstream.
+
 Join the **Forge community** on [Discord](https://discord.gg/HcPJNyD66a)!
 
 [![Test build](https://github.com/Card-Forge/forge/actions/workflows/test-build.yaml/badge.svg)](https://github.com/Card-Forge/forge/actions/workflows/test-build.yaml)

@@ -288,8 +288,9 @@ public class FControlGameEventHandler extends IGameEventVisitor.Base<Void> {
         GameView gv = matchController.getGameView();
         if (gv == null || gv.getGame() == null) return;
         // Look up the actual SpellAbilityStackInstance by id (host-side; client gv.getGame() is null).
+        int targetId = event.si().getId();
         for (SpellAbilityStackInstance candidate : gv.getGame().getStack()) {
-            if (candidate.getId() == event.si().getId()) {
+            if (candidate.getId() == targetId) {
                 yc.onSpellAbilityCast(candidate);
                 return;
             }

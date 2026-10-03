@@ -111,7 +111,7 @@ public class GameAction {
             zoneTo.add(c, position, CardCopyService.getLKICopy(c));
             checkStaticAbilities();
             game.getTriggerHandler().registerActiveTrigger(c, true);
-            game.fireEvent(new GameEventCardChangeZone(c, zoneFrom, zoneTo));
+            game.fireEvent(new GameEventCardChangeZone(c, zoneFrom, zoneTo, cause, params, game.costPaymentStack.peek()));
             return c;
         }
 
@@ -579,7 +579,7 @@ public class GameAction {
         }
 
         // play the change zone sound
-        game.fireEvent(new GameEventCardChangeZone(c, zoneFrom, zoneTo));
+        game.fireEvent(new GameEventCardChangeZone(c, zoneFrom, zoneTo, cause, params, game.costPaymentStack.peek()));
 
         game.getTriggerHandler().clearActiveTriggers(copied, null);
         game.getTriggerHandler().registerActiveTrigger(copied, false);
@@ -992,7 +992,6 @@ public class GameAction {
     }
 
     public final void controllerChangeZoneCorrection(final Card c) {
-        System.out.println("Correcting zone for " + c.toString());
         final Zone oldBattlefield = game.getZoneOf(c);
 
         if (oldBattlefield == null || oldBattlefield.is(ZoneType.Stack)) {
@@ -1032,6 +1031,8 @@ public class GameAction {
 
         c.setCameUnderControlSinceLastUpkeep(true);
         c.handleChangedControllerSprocketReset();
+
+        game.fireEvent(new GameEventControllerChanged(c, original, controller));
 
         final Map<AbilityKey, Object> runParams = AbilityKey.mapFromCard(c);
         runParams.put(AbilityKey.OriginalController, original);
@@ -2155,7 +2156,7 @@ public class GameAction {
         //for animation
         c.updateWasDestroyed(true);
         // Play the Destroy sound
-        game.fireEvent(new GameEventCardDestroyed());
+        game.fireEvent(new GameEventCardDestroyed(c, sa));
 
         final Map<AbilityKey, Object> runParams = AbilityKey.mapFromCard(c);
         runParams.put(AbilityKey.Causer, activator);

@@ -11,6 +11,7 @@ public interface IGameEventVisitor<T> {
     T visit(GameEventCardModeChosen event);
     T visit(GameEventCardRegenerated event);
     T visit(GameEventCardSacrificed event);
+    T visit(GameEventCardSurveiled event);
     T visit(GameEventCardPhased event);
     T visit(GameEventCardTapped event);
     T visit(GameEventCardStatsChanged event);
@@ -25,6 +26,7 @@ public interface IGameEventVisitor<T> {
     T visit(GameEventGameRestarted event);
     T visit(GameEventLandPlayed event);
     T visit(GameEventPlayerLivesChanged event);
+    T visit(GameEventManaAbilityActivated event);
     T visit(GameEventManaPool event);
     T visit(GameEventManaBurn event);
     T visit(GameEventMulligan event);
@@ -59,6 +61,9 @@ public interface IGameEventVisitor<T> {
     T visit(GameEventDoorChanged event);
     T visit(GameEventSnapshotRestored gameEventSnapshotRestored);
     T visit(GameEventAddLog event);
+    T visit(GameEventSpellMovedToStack event);
+    T visit(GameEventControllerChanged event);
+    T visit(GameEventExtrinsicKeywordAdded event);
 
     // This is base class for all visitors.
     class Base<T> implements IGameEventVisitor<T>{
@@ -72,6 +77,7 @@ public interface IGameEventVisitor<T> {
         public T visit(GameEventCardModeChosen event) { return null; }
         public T visit(GameEventCardRegenerated event) { return null; }
         public T visit(GameEventCardSacrificed event) { return null; }
+        public T visit(GameEventCardSurveiled event) { return null; }
         public T visit(GameEventCardTapped event) { return null; }
         public T visit(GameEventCardStatsChanged event) { return null; }
         public T visit(GameEventCardCounters event) { return null; }
@@ -86,6 +92,7 @@ public interface IGameEventVisitor<T> {
         public T visit(GameEventGameRestarted event) { return null; }
         public T visit(GameEventLandPlayed event) { return null; }
         public T visit(GameEventPlayerLivesChanged event) { return null; }
+        public T visit(GameEventManaAbilityActivated event) { return null; }
         public T visit(GameEventManaPool event) { return null; }
         public T visit(GameEventManaBurn event) { return null; }
         public T visit(GameEventMulligan event) { return null; }
@@ -120,5 +127,8 @@ public interface IGameEventVisitor<T> {
         public T visit(GameEventDoorChanged event) { return null; }
         public T visit(GameEventSnapshotRestored gameEventSnapshotRestored) { return null; }
         public T visit(GameEventAddLog event) { return null; }
+        public T visit(GameEventSpellMovedToStack event) { return null; }
+        public T visit(GameEventControllerChanged event) { return null; }
+        public T visit(GameEventExtrinsicKeywordAdded event) { return null; }
     }
 }

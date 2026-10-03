@@ -42,7 +42,7 @@ import java.util.List;
  */
 public class RewardScene extends UIScene {
     private TextraButton doneButton, detailButton, restockButton;
-    private TextraLabel playerGold, playerShards;
+    private TextraLabel playerGold, playerShards, tooltipInfo;
     private TypingLabel headerLabel;
     private Vector2 headerLabelOrigPos;
     private boolean autoSell;
@@ -96,6 +96,9 @@ public class RewardScene extends UIScene {
         doneButton = ui.findActor("done");
         restockButton = ui.findActor("restock");
         origDrawable = getBGDrawable();
+        tooltipInfo = Controls.newTextraLabel("");
+        tooltipInfo.style = Controls.getLabelStyle("dialog");
+        ui.addActor(tooltipInfo);
     }
 
     @Override
@@ -242,6 +245,13 @@ public class RewardScene extends UIScene {
             setUIBackground(origDrawable);
         }
         super.enter();
+    }
+
+    public void showTooltipInfo(String message) {
+        tooltipInfo.setText(message);
+        float w = tooltipInfo.getPrefWidth();
+        float h = tooltipInfo.getPrefHeight();
+        tooltipInfo.setBounds((Scene.getIntendedWidth() / 2f) - (w / 2f), 0, w, h);
     }
 
     private void showLootOrDone() {

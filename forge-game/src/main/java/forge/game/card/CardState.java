@@ -744,6 +744,7 @@ public class CardState implements GameObject, IHasSVars, ITranslatable {
             if (getCard().hasState(CardStateName.RightSplit))
                 result.addAll(getCard().getState(CardStateName.RightSplit).replacementEffects);
         }
+        CardTypeView type = getTypeWithChanges();
 
         card.updateReplacementEffects(result, this, rulesHost);
 

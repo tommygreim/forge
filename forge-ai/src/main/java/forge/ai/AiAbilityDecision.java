@@ -6,12 +6,17 @@ import forge.game.phase.PhaseType;
 import forge.game.player.Player;
 import forge.game.spellability.SpellAbility;
 
-public record AiAbilityDecision(int rating, AiPlayDecision decision) {
+public record AiAbilityDecision(int rating, AiPlayDecision decision, SpellAbility sa) {
     private static int MIN_RATING = 30;
 
-    public boolean willingToPlay() {
-        return willingToPlay(null);
+    public AiAbilityDecision(int rating, AiPlayDecision decision) {
+        this(rating, decision, null);
     }
+
+    public boolean willingToPlay() {
+        return willingToPlay(sa);
+    }
+
     public boolean willingToPlay(SpellAbility sa) {
         if (!decision.willingToPlay()) {
             return false;

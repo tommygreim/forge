@@ -535,6 +535,9 @@ public class MagicStack /* extends MyObservable */ implements Iterable<SpellAbil
             PlayEffect.addReplaceGraveyardEffect(sp.getHostCard(), sp.getMayPlay().getHostCard(), sp, sp, sp.getMayPlay().getParam("ReplaceGraveyard"));
         }
         si = si == null ? new SpellAbilityStackInstance(sp, id) : si;
+        if (si.getView().getActivatingPlayer() == null && sp.getActivatingPlayer() != null) {
+            si.setActivatingPlayer(sp.getActivatingPlayer());
+        }
 
         stack.addFirst(si);
         int stackIndex = stack.size() - 1;
@@ -757,7 +760,8 @@ public class MagicStack /* extends MyObservable */ implements Iterable<SpellAbil
     }
 
     public final SpellAbility peekAbility() {
-        return stack.peekFirst().getSpellAbility();
+        final SpellAbilityStackInstance instance = stack.peekFirst();
+        return instance == null ? null : instance.getSpellAbility();
     }
 
     public final void remove(final SpellAbilityStackInstance si) {
