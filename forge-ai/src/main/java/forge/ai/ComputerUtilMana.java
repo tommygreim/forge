@@ -110,7 +110,25 @@ public class ComputerUtilMana {
      * mana abilities Forge selected.
      */
     public static List<SpellAbility> getManaPaymentPlan(final ManaCostBeingPaid cost, final SpellAbility sa, final Player ai, final boolean effect) {
-        return payManaCost(cost, sa, ai, true, true, effect);
+        // The test payment path clears Offering/Emerge's selected sacrifice in
+        // CostPayment.handleOfferings. A payment-plan query made during a real
+        // cast must leave that choice available for the subsequent payment.
+        final Card offering = sa.getSacrificedAsOffering();
+        final Card emerge = sa.getSacrificedAsEmerge();
+        final boolean offeringUsedToPay = offering != null && offering.isUsedToPay();
+        final boolean emergeUsedToPay = emerge != null && emerge.isUsedToPay();
+        try {
+            return payManaCost(cost, sa, ai, true, true, effect);
+        } finally {
+            if (offering != null) {
+                sa.setSacrificedAsOffering(offering);
+                offering.setUsedToPay(offeringUsedToPay);
+            }
+            if (emerge != null) {
+                sa.setSacrificedAsEmerge(emerge);
+                emerge.setUsedToPay(emergeUsedToPay);
+            }
+        }
     }
 
     private static Integer scoreManaProducingCard(final Card card) {
