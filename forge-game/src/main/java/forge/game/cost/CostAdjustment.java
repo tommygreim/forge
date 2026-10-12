@@ -171,8 +171,13 @@ public class CostAdjustment {
     // If cardsToDelveOut is null, will immediately exile the delved cards and remember them on the host card.
     // Otherwise, will return them in cardsToDelveOut and the caller is responsible for doing the above.
     public static boolean adjust(ManaCostBeingPaid cost, final SpellAbility sa, final Player payer, CardCollection cardsToDelveOut, boolean test, boolean effect) {
+        return adjust(cost, sa, payer, cardsToDelveOut, null, test, effect);
+    }
+
+    /** Optional reducer-source/shard output; pass test=true for a non-mutating preview. */
+    public static boolean adjust(ManaCostBeingPaid cost, final SpellAbility sa, final Player payer, CardCollection cardsToDelveOut, Map<Card, ManaCostShard> reducersOut, boolean test, boolean effect) {
         if (effect) {
-            adjustCostByWaterbend(cost, sa, payer, test);
+            return adjustCostByWaterbend(cost, sa, payer, test, reducersOut);
         }
         if (effect || sa.isTrigger() || sa.isReplacementAbility()) {
             return true;
@@ -281,18 +286,18 @@ public class CostAdjustment {
                 table.triggerChangesZoneAll(game, sa);
             }
             if (host.hasKeyword(Keyword.CONVOKE)) {
-                adjustCostByConvokeOrImprovise(cost, sa, activator, false, true, test);
+                if (!adjustCostByConvokeOrImprovise(cost, sa, activator, false, true, test, reducersOut)) return false;
             }
             if (host.hasKeyword(Keyword.IMPROVISE)) {
-                adjustCostByConvokeOrImprovise(cost, sa, activator, true, false, test);
+                if (!adjustCostByConvokeOrImprovise(cost, sa, activator, true, false, test, reducersOut)) return false;
             }
         }
 
         if (sa.hasParam("TapCreaturesForMana")) {
-            adjustCostByConvokeOrImprovise(cost, sa, activator, false, true, test);
+            if (!adjustCostByConvokeOrImprovise(cost, sa, activator, false, true, test, reducersOut)) return false;
         }
 
-        adjustCostByWaterbend(cost, sa, payer, test);
+        if (!adjustCostByWaterbend(cost, sa, payer, test, reducersOut)) return false;
 
         // Reset card state (if changed)
         if (isStateChangeToFaceDown) {
@@ -326,14 +331,15 @@ public class CostAdjustment {
         return assistant.getController().helpPayForAssistSpell(cost, sa, genericLeft, requestedAmount);
     }
 
-    private static void adjustCostByWaterbend(ManaCostBeingPaid cost, SpellAbility sa, Player payer, boolean test) {
+    private static boolean adjustCostByWaterbend(ManaCostBeingPaid cost, SpellAbility sa, Player payer, boolean test, Map<Card, ManaCostShard> reducersOut) {
         Integer maxWaterbend = sa.getMaxWaterbend();
         if (maxWaterbend != null && maxWaterbend > 0) {
-            adjustCostByConvokeOrImprovise(cost, sa, payer, true, true, test);
+            return adjustCostByConvokeOrImprovise(cost, sa, payer, true, true, test, reducersOut);
         }
+        return true;
     }
 
-    private static void adjustCostByConvokeOrImprovise(ManaCostBeingPaid cost, final SpellAbility sa, final Player payer, boolean artifacts, boolean creatures, boolean test) {
+    private static boolean adjustCostByConvokeOrImprovise(ManaCostBeingPaid cost, final SpellAbility sa, final Player payer, boolean artifacts, boolean creatures, boolean test, Map<Card, ManaCostShard> reducersOut) {
         if (creatures && !artifacts) {
             sa.clearTappedForConvoke();
         }
@@ -353,11 +359,15 @@ public class CostAdjustment {
         }
 
         if (untappedCards.isEmpty()) {
-            return;
+            return true;
         }
 
         Map<Card, ManaCostShard> convokedCards = payer.getController().chooseCardsForConvokeOrImprovise(sa,
                 cost.toManaCost(), untappedCards, artifacts, creatures, maxReduction);
+        // Empty means use ordinary mana; null means abandon this payment.
+        // No source has been tapped until the selection is accepted.
+        if (convokedCards == null) return false;
+        if (reducersOut != null) reducersOut.putAll(convokedCards);
 
         CardCollection tapped = new CardCollection();
         for (final Entry<Card, ManaCostShard> conv : convokedCards.entrySet()) {
@@ -375,6 +385,7 @@ public class CostAdjustment {
             runParams.put(AbilityKey.Cards, tapped);
             payer.getGame().getTriggerHandler().runTrigger(TriggerType.TapAll, runParams, false);
         }
+        return true;
     }
 
     private static void adjustCostByOffering(final ManaCostBeingPaid cost, final SpellAbility sa) {

@@ -236,6 +236,10 @@ public abstract class PlayerController {
     public abstract CardCollectionView chooseCardsToDiscardToMaximumHandSize(int numDiscard);
 
     public abstract CardCollectionView chooseCardsToDelve(int genericAmount, CardCollection grave);
+    /**
+     * Select payment reducers without committing taps. An empty map accepts no
+     * reducers and continues ordinary mana payment; null aborts the payment.
+     */
     public abstract Map<Card, ManaCostShard> chooseCardsForConvokeOrImprovise(SpellAbility sa, ManaCost manaCost, CardCollectionView untappedCards, boolean artifacts, boolean creatures, Integer maxReduction);
     public abstract List<Card> chooseCardsForSplice(SpellAbility sa, List<Card> cards);
 

@@ -470,7 +470,9 @@ public class PlaySpellAbility {
         }
 
         CardCollection cardsToDelve = new CardCollection();
-        CostAdjustment.adjust(toPay, ability, activator, cardsToDelve, false, effect);
+        if (!CostAdjustment.adjust(toPay, ability, activator, cardsToDelve, false, effect)) {
+            return handleOfferingConvokeAndDelve(ability, cardsToDelve, true);
+        }
 
         Card offering = null;
         Card emerge = null;

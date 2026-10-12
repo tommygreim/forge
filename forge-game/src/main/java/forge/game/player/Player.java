@@ -1048,7 +1048,7 @@ public class Player extends GameEntity implements Comparable<Player> {
     }
 
     public void surveil(int num, SpellAbility cause, Map<AbilityKey, Object> params) {
-        num += StaticAbilitySurveilNum.surveilNumMod(this);
+        num += StaticAbilitySurveilNum.surveilNumMod(this, num);
 
         final CardCollection topN = getTopXCardsFromLibrary(num);
 
@@ -1130,6 +1130,49 @@ public class Player extends GameEntity implements Comparable<Player> {
     public final CardCollectionView drawCards(final int n, SpellAbility cause, Map<AbilityKey, Object> params) {
         return drawCards(n, cause, params, this.getZone(ZoneType.Hand));
     }
+
+    /**
+     * Read-only presentation query for draw replacements applicable in the current state.
+     * Checks both the draw batch and its first individual draw using the same event
+     * parameters as actual drawing. This does not run replacements, choose an order,
+     * or predict how many cards will ultimately be drawn at resolution.
+     */
+    public final List<ReplacementEffect> getApplicableDrawReplacements(final int n, SpellAbility cause,
+                                                                     Map<AbilityKey, Object> params) {
+        if (n <= 0 || game.getAge().ordinal() <= GameStage.Mulligan.ordinal()) {
+            return Collections.emptyList();
+        }
+        final List<ReplacementEffect> replacements = new ArrayList<>(game.getReplacementHandler()
+                .getReplacementList(ReplacementType.DrawCards, drawBatchReplacementParams(n, params), null));
+        if (canDraw()) {
+            replacements.addAll(game.getReplacementHandler()
+                    .getReplacementList(ReplacementType.Draw, drawReplacementParams(cause, params), null));
+        }
+        return replacements;
+    }
+
+    private Map<AbilityKey, Object> drawBatchReplacementParams(final int n, Map<AbilityKey, Object> params) {
+        final Map<AbilityKey, Object> result = AbilityKey.mapFromAffected(this);
+        result.put(AbilityKey.Number, n);
+        if (params != null) {
+            result.putAll(params);
+        }
+        return result;
+    }
+
+    private Map<AbilityKey, Object> drawReplacementParams(SpellAbility cause, Map<AbilityKey, Object> params) {
+        if (cause != null && cause.isReplacementAbility()) {
+            cause = (SpellAbility) cause.getReplacingObject(AbilityKey.Cause);
+        }
+        final Map<AbilityKey, Object> result = AbilityKey.mapFromAffected(this);
+        result.put(AbilityKey.Cause, cause);
+        result.put(AbilityKey.ExtraDraws, numExtraDrawnThisTurn);
+        if (params != null) {
+            result.putAll(params);
+        }
+        return result;
+    }
+
     public final CardCollectionView drawCards(final int n, SpellAbility cause, Map<AbilityKey, Object> params, PlayerZone zone) {
         final CardCollection drawn = new CardCollection();
         if (n <= 0) {
@@ -1140,11 +1183,7 @@ public class Player extends GameEntity implements Comparable<Player> {
         final boolean gameStarted = game.getAge().ordinal() > GameStage.Mulligan.ordinal();
 
         if (gameStarted) {
-            final Map<AbilityKey, Object> repRunParams = AbilityKey.mapFromAffected(this);
-            repRunParams.put(AbilityKey.Number, n);
-            if (params != null) {
-                repRunParams.putAll(params);
-            }
+            final Map<AbilityKey, Object> repRunParams = drawBatchReplacementParams(n, params);
             if (game.getReplacementHandler().run(ReplacementType.DrawCards, repRunParams) != ReplacementResult.NotReplaced) {
                 return drawn;
             }
@@ -1187,12 +1226,7 @@ public class Player extends GameEntity implements Comparable<Player> {
 
         final boolean gameStarted = game.getAge().ordinal() > GameStage.Mulligan.ordinal();
         if (gameStarted) {
-            Map<AbilityKey, Object> repParams = AbilityKey.mapFromAffected(this);
-            repParams.put(AbilityKey.Cause, cause);
-            repParams.put(AbilityKey.ExtraDraws, numExtraDrawnThisTurn);
-            if (params != null) {
-                repParams.putAll(params);
-            }
+            Map<AbilityKey, Object> repParams = drawReplacementParams(sa, params);
             if (game.getReplacementHandler().run(ReplacementType.Draw, repParams) != ReplacementResult.NotReplaced) {
                 return drawn;
             }
